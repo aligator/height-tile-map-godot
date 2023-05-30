@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://cyhfpkfg76ysy"]
+[gd_scene load_steps=6 format=3 uid="uid://cyhfpkfg76ysy"]
 
 [ext_resource type="Script" path="res://HeightTileMap.gd" id="1_1y6yn"]
 [ext_resource type="TileSet" uid="uid://b2qy7iiuvn7be" path="res://grassTiles.tres" id="2_bpeqs"]
@@ -31,9 +31,7 @@ texture_region_size = Vector2i(32, 32)
 tile_shape = 1
 tile_layout = 5
 tile_size = Vector2i(64, 32)
-sources/2 = SubResource("TileSetAtlasSource_5vher")
-
-[sub_resource type="GDScript" id="GDScript_rd8d3"]
+sources/0 = SubResource("TileSetAtlasSource_5vher")
 
 [node name="HeightMap" type="TileMap"]
 y_sort_enabled = true
@@ -42,11 +40,7 @@ format = 2
 layer_0/name = "Numbers"
 layer_0/y_sort_enabled = true
 layer_0/z_index = 99
-layer_0/tile_data = PackedInt32Array(0, 2, 0, 65537, 2, 0, 65536, 2, 0, 1, 2, 0, 131073, 2, 0, 131074, 65538, 0, 2, 2, 0, 131072, 2, 0, 196609, 2, 0, 196608, 2, 0, 196610, 2, 0, 196611, 2, 0, 65538, 2, 0, 262144, 2, 0, 131075, 2, 0, 131076, 2, 0, 196612, 2, 0, 65540, 2, 0, 65539, 2, 0, 262145, 2, 0, 262146, 2, 0, 262147, 2, 0, 262148, 2, 0, 3, 2, 0, 4, 2, 0, 327680, 2, 0, 327681, 2, 0, 327682, 2, 0, 327683, 2, 0, 327684, 2, 0, 327685, 2, 0, 262149, 2, 0, 262150, 2, 0, 196614, 2, 0, 131078, 2, 0, 131077, 2, 0, 65541, 2, 0, 5, 2, 0, 196613, 2, 0, 327686, 2, 0, 65542, 2, 0, 6, 2, 0)
 script = ExtResource("1_1y6yn")
-
-[node name="EditorScript" type="Node" parent="."]
-script = SubResource("GDScript_rd8d3")
 
 [node name="TileMap0" type="TileMap" parent="."]
 y_sort_enabled = true
@@ -54,7 +48,6 @@ tile_set = ExtResource("2_bpeqs")
 format = 2
 layer_0/name = "0"
 layer_0/y_sort_enabled = true
-layer_0/tile_data = PackedInt32Array(0, 0, 0, 65536, 0, 0, 131072, 0, 0, 196608, 0, 0, 262144, 0, 0, 1, 0, 0, 65537, 131072, 0, 131073, 262144, 0, 196609, 0, 0, 262145, 0, 0, 2, 0, 0, 65538, 65536, 0, 131074, 524288, 0, 196610, 0, 0, 262146, 0, 0, 3, 0, 0, 65539, 0, 0, 131075, 0, 0, 196611, 0, 0, 262147, 0, 0, 4, 0, 0, 65540, 0, 0, 131076, 0, 0, 196612, 0, 0, 262148, 0, 0)
 
 [node name="TileMap1" type="TileMap" parent="."]
 y_sort_enabled = true
@@ -75,6 +68,22 @@ layer_0/y_sort_enabled = true
 [node name="TileMap3" type="TileMap" parent="."]
 y_sort_enabled = true
 position = Vector2(0, -24)
+tile_set = ExtResource("2_bpeqs")
+format = 2
+layer_0/name = "0"
+layer_0/y_sort_enabled = true
+
+[node name="TileMap4" type="TileMap" parent="."]
+y_sort_enabled = true
+position = Vector2(0, -32)
+tile_set = ExtResource("2_bpeqs")
+format = 2
+layer_0/name = "0"
+layer_0/y_sort_enabled = true
+
+[node name="TileMap5" type="TileMap" parent="."]
+y_sort_enabled = true
+position = Vector2(0, -40)
 tile_set = ExtResource("2_bpeqs")
 format = 2
 layer_0/name = "0"

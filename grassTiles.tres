@@ -1,6 +1,6 @@
 [gd_resource type="TileSet" load_steps=3 format=3 uid="uid://b2qy7iiuvn7be"]
 
-[ext_resource type="Texture2D" uid="uid://drmw2qk63lmkp" path="res://assets/grass_sheet.png" id="1_k66l6"]
+[ext_resource type="Texture2D" uid="uid://bvl7aag8gaasm" path="res://assets/grass_sheet.png" id="1_k66l6"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_l72p5"]
 resource_name = "Grass"

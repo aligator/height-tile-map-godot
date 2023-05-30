@@ -1,10 +1,8 @@
-@tool
-
 extends TileMap
 class_name HeightTileMap
 
-@export var size_min = Vector2(-5, -5)
-@export var size_max = Vector2(5, 5)
+@export var size_min = Vector2(0, 0)
+@export var size_max = Vector2(10, 10)
 
 # TODO: generate tilemaps automatically later.
 @onready var tile_maps = [
@@ -12,6 +10,8 @@ class_name HeightTileMap
 	$TileMap1,
 	$TileMap2, 
 	$TileMap3,
+	$TileMap4,
+	$TileMap5,
 ]
 @onready var height_map: HeightTileMap = self
 
@@ -184,8 +184,26 @@ func map_heights_to_tile_maps():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	var rand = RandomNumberGenerator.new()
+	var map = DiamondSquare.generate(11, 1.0, 5, rand)
+	
+	# print the map line by line
+	for y in range(map.size()):
+		var line = ""
+		for x in range(map[y].size()):
+			line += str(map[y][x]) + " "
+		print(line)
+	
 	for tile_map in tile_maps:
 		tile_map.clear()
+		
+	height_map.clear()
+	for x in range(map.size()):
+		for y in range(map[x].size()):
+			height_map.set_cell(0, Vector2i(x, y), 0, Vector2i(map[x][y], 0))
+	
+	
+	height_map.map_heights_to_tile_maps()
 
 func _on_changed():
 	if height_map == null: 
