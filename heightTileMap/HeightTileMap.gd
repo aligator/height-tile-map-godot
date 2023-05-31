@@ -1,8 +1,9 @@
 extends Node2D
 class_name HeightTileMap
 
-@export var size: int = 10
+@export var size: int = 16
 @export var max_height: int = 16
+@export var roughness: float = 30
 @export var shift: Vector2i = Vector2i(0, -8)
 @export var base_tile_map: TileMap
 @export var mapper_script: GDScript
@@ -17,7 +18,7 @@ var main_map: TileMap
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var rand = RandomNumberGenerator.new()
-	heights = DiamondSquare.generate(size+1, 10, max_height-1, rand)
+	heights = DiamondSquare.generate(size+1, roughness, max_height-1, rand)
 		
 	# print the map line by line
 	for y in range(heights.size()):
