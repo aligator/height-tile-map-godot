@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://cpemlid8mvp4m"]
 
 [ext_resource type="TileSet" uid="uid://b2qy7iiuvn7be" path="res://grassTiles.tres" id="1_vbbg2"]
-[ext_resource type="PackedScene" uid="uid://cyhfpkfg76ysy" path="res://heightTileMap.tscn" id="2_k0jk2"]
+[ext_resource type="PackedScene" uid="uid://cyhfpkfg76ysy" path="res://heightTileMap/heightTileMap.tscn" id="2_k0jk2"]
 
 [node name="World" type="Node2D"]
 
@@ -44,6 +44,7 @@ layer_0/y_sort_enabled = true
 layer_0/tile_data = PackedInt32Array(-458744, 786432, 0, -458742, 786432, 0, -458743, 786432, 0, -458745, 786432, 0)
 
 [node name="HeightTileMap2" parent="." instance=ExtResource("2_k0jk2")]
+max_height = 4
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(28, 162)

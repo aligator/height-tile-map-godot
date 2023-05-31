@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://cyhfpkfg76ysy"]
+
+[ext_resource type="Script" path="res://heightTileMap/HeightTileMap.gd" id="1_12oik"]
+[ext_resource type="Script" path="res://scripts/openTTDMapper.gd" id="2_iow4v"]
+[ext_resource type="TileSet" uid="uid://b2qy7iiuvn7be" path="res://grassTiles.tres" id="3_uh6fg"]
+
+[node name="HeightTileMap" type="Node2D" node_paths=PackedStringArray("base_tile_map")]
+script = ExtResource("1_12oik")
+base_tile_map = NodePath("OpenTTDBaseMap")
+mapper_script = ExtResource("2_iow4v")
+
+[node name="OpenTTDBaseMap" type="TileMap" parent="."]
+visible = false
+y_sort_enabled = true
+tile_set = ExtResource("3_uh6fg")
+format = 2
+layer_0/name = "0"
+layer_0/y_sort_enabled = true

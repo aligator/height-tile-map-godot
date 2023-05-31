@@ -1,19 +1,5 @@
-extends TileMap
-class_name HeightTileMap
-
-@export var size_min = Vector2(0, 0)
-@export var size_max = Vector2(10, 10)
-
-# TODO: generate tilemaps automatically later.
-@onready var tile_maps = [
-	$TileMap0, 
-	$TileMap1,
-	$TileMap2, 
-	$TileMap3,
-	$TileMap4,
-	$TileMap5,
-]
-@onready var height_map: HeightTileMap = self
+# This is the reference implementation of a mapper script.
+# It implements the OpenTTD tile system. https://newgrf-specs.tt-wiki.net/wiki/NML:List_of_tile_slopes
 
 enum Flag {
 	CORNER_W = 0b00001,
@@ -124,12 +110,12 @@ enum Direction {
 
 # Get the hights of a tile at the given position.
 # It is returned as an array of [top, right, bottom, left]
-func _get_heights(x, y):
+func _get_heights(heights, x, y):
 	return [
-		height_map.get_cell_atlas_coords(0, Vector2i(x, y)).x,
-		height_map.get_cell_atlas_coords(0, Vector2i(x+1, y)).x,
-		height_map.get_cell_atlas_coords(0, Vector2i(x+1, y+1)).x,
-		height_map.get_cell_atlas_coords(0, Vector2i(x, y+1)).x,
+		heights[x][y],
+		heights[x+1][y],
+		heights[x+1][y+1],
+		heights[x][y+1],
 	]
 
 func _get_lowest(heights: Array) -> int:
@@ -141,73 +127,55 @@ func _get_lowest(heights: Array) -> int:
 	
 	return lowest
 
-func map_heights_to_tile_maps():
+# Build takes the corner_heights and a new main_map as input.
+# It then should calculate which tile from the tile set each tile should have.
+# It then sets the tiles of main_map accordingly.
+# It also returns a new height map (tile_heights) which maps each tile to an actual height.
+# This information is later used to shift each tile to the correct position.
+func build(corner_heights: Array[Array], main_map: TileMap) -> Array[Array]:
+	var tile_heights: Array[Array] = []
+	
 	# Read the HeightMap and generate the tilemaps.
-	for x in range(size_min.x, size_max.x):
-		for y in range(size_min.y, size_max.y):
+	for x in range(0, corner_heights.size()-1):
+		tile_heights.push_back(Array())
+		for y in range(0, corner_heights[x].size()-1):
+			tile_heights[x].push_back(0)
 			var at = Vector2(x, y)
 
 			# Get all relevant heights.
-			var heights = _get_heights(x, y)
-			var lowest = _get_lowest(heights)
+			var heights_at = _get_heights(corner_heights, x, y)
+			var lowest = _get_lowest(heights_at)
 
 			# Get the bitboard number.
 			var bitmask = 0
 			
 			# Find steep tiles.
-			for i in range(heights.size()):
-				if heights[i] == lowest && heights[(i+2)%4] == lowest+2:
+			for i in range(heights_at.size()):
+				if heights_at[i] == lowest && heights_at[(i+2)%4] == lowest+2:
 					bitmask |= Flag.IS_STEEP_SLOPE
 					break
 			
-			if heights[0] == heights[1] && heights[0] == heights[2] && heights[0] == heights[3]:
+			if heights_at[0] == heights_at[1] && heights_at[0] == heights_at[2] && heights_at[0] == heights_at[3]:
 				bitmask = 0 
-			if heights[0] > lowest:
+			if heights_at[0] > lowest:
 				bitmask |= Flag.CORNER_N
-			if heights[1] > lowest:
+			if heights_at[1] > lowest:
 				bitmask |= Flag.CORNER_E
-			if heights[2] > lowest:
+			if heights_at[2] > lowest:
 				bitmask |= Flag.CORNER_S
-			if heights[3] > lowest:
+			if heights_at[3] > lowest:
 				bitmask |= Flag.CORNER_W
 
 			# Get the sprite index.
 			var sprite_index = bitboards_reverse[bitmask]
 
-			# Use the lowest height as the base layer.
-			for i in range(tile_maps.size()):
-				var tile_map: TileMap = tile_maps[i]
-				if i == lowest:
-					tile_map.set_cell(0, at, 0, Vector2i(sprite_index, 0))
-				else:
-					tile_map.erase_cell(0, at)
-
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	var rand = RandomNumberGenerator.new()
-	var map = DiamondSquare.generate(11, 1.0, 5, rand)
+			# Set the correct tile into the height map.
+			# Note: We ignore the actual height here.
+			#       The actual height is mapped by the TileMap.
+			#       The main_map serves only as invisible tile-handling-entity.
+			main_map.set_cell(0, at, 0, Vector2i(sprite_index, 0))
+			
+			# Instead set the tile_heights to the height we want our tile at.
+			tile_heights[x][y] = lowest
 	
-	# print the map line by line
-	for y in range(map.size()):
-		var line = ""
-		for x in range(map[y].size()):
-			line += str(map[y][x]) + " "
-		print(line)
-	
-	for tile_map in tile_maps:
-		tile_map.clear()
-		
-	height_map.clear()
-	for x in range(map.size()):
-		for y in range(map[x].size()):
-			height_map.set_cell(0, Vector2i(x, y), 0, Vector2i(map[x][y], 0))
-	
-	
-	height_map.map_heights_to_tile_maps()
-
-func _on_changed():
-	if height_map == null: 
-		return
-		
-	print("changed")
-	height_map.map_heights_to_tile_maps()
+	return tile_heights

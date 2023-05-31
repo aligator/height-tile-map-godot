@@ -28,7 +28,6 @@ static func generate(size: int, roughness: float, max_height: float, rand: Rando
 		# Caclulate the diamond values
 		for x in range(0, size - 1, side_length):
 			for y in range(0, size - 1, side_length):
-				print("x: ", x, " y: ", y, " side_length: ", side_length, " half_length: ", half_length)
 
 				# avg over the 4 corners of the square
 				var top_left = map[x][y]
@@ -41,10 +40,6 @@ static func generate(size: int, roughness: float, max_height: float, rand: Rando
 				
 				# Set the center to the average of the corners + random value
 				map[x + half_length][y + half_length] = avg
-				
-				# print map
-				for i in range(0, size):
-					print(map[i])
 
 		# Calculate the square values
 		for x in range(0, size, half_length):
@@ -86,11 +81,3 @@ static func generate(size: int, roughness: float, max_height: float, rand: Rando
 
 	# Return the map
 	return map
-
-static func _diamond():
-	
-	pass
-	
-static func _square():
-	
-	pass
