@@ -7,8 +7,10 @@ class_name HeightTileMap
 @export var shift: Vector2i = Vector2i(0, -8)
 @export var base_tile_map: TileMap
 @export var mapper_script: GDScript
+@export var map_generator_script: GDScript
 
 @onready var mapper = mapper_script.new()
+@onready var map_generator = map_generator_script.new()
 
 var heights: Array[Array]
 
@@ -18,7 +20,7 @@ var main_map: TileMap
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var rand = RandomNumberGenerator.new()
-	heights = DiamondSquare.generate(size+1, roughness, max_height-1, rand)
+	heights = map_generator.generate(size+1, roughness, max_height-1, rand)
 		
 	# print the map line by line
 	for y in range(heights.size()):

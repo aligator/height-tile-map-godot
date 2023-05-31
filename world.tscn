@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://cpemlid8mvp4m"]
 
-[ext_resource type="TileSet" uid="uid://b2qy7iiuvn7be" path="res://grassTiles.tres" id="1_vbbg2"]
+[ext_resource type="TileSet" uid="uid://b2qy7iiuvn7be" path="res://assets/grassTiles.tres" id="1_7v6xd"]
 [ext_resource type="PackedScene" uid="uid://cyhfpkfg76ysy" path="res://heightTileMap/heightTileMap.tscn" id="2_k0jk2"]
 
 [node name="World" type="Node2D"]
@@ -10,7 +10,7 @@ visible = false
 
 [node name="TileMap1" type="TileMap" parent="ManualMap"]
 y_sort_enabled = true
-tile_set = ExtResource("1_vbbg2")
+tile_set = ExtResource("1_7v6xd")
 format = 2
 layer_0/name = "0"
 layer_0/y_sort_enabled = true
@@ -19,7 +19,7 @@ layer_0/tile_data = PackedInt32Array(0, 393216, 0, 1, 589824, 0, 65537, 720896, 
 [node name="TileMap2" type="TileMap" parent="ManualMap"]
 y_sort_enabled = true
 position = Vector2(0, -8)
-tile_set = ExtResource("1_vbbg2")
+tile_set = ExtResource("1_7v6xd")
 format = 2
 layer_0/name = "0"
 layer_0/y_sort_enabled = true
@@ -28,7 +28,7 @@ layer_0/tile_data = PackedInt32Array(-327672, 786432, 0, -327673, 786432, 0, -32
 [node name="TileMap3" type="TileMap" parent="ManualMap"]
 y_sort_enabled = true
 position = Vector2(0, -16)
-tile_set = ExtResource("1_vbbg2")
+tile_set = ExtResource("1_7v6xd")
 format = 2
 layer_0/name = "0"
 layer_0/y_sort_enabled = true
@@ -37,7 +37,7 @@ layer_0/tile_data = PackedInt32Array(-393208, 786432, 0, -393209, 786432, 0, -39
 [node name="TileMap4" type="TileMap" parent="ManualMap"]
 y_sort_enabled = true
 position = Vector2(0, -24)
-tile_set = ExtResource("1_vbbg2")
+tile_set = ExtResource("1_7v6xd")
 format = 2
 layer_0/name = "0"
 layer_0/y_sort_enabled = true

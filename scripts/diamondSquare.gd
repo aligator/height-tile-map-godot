@@ -4,11 +4,7 @@
 # https://peterellisjones.com/posts/generating-transport-tycoon-terrain/
 # https://craftofcoding.wordpress.com/tag/diamond-square-algorithm/
 
-extends Node
-
-class_name DiamondSquare
-
-static func print_map(map):
+func print_map(map):
 	# Print the map line by line
 	for x in range(0, map.size()):
 		var line = ""
@@ -17,7 +13,7 @@ static func print_map(map):
 		print(line)
 	print("_______________")
 
-static func diamondStep(map: Array[Array], x: int, y: int, reach: int, size: int, roughness: float, max_height: int, rand: RandomNumberGenerator):
+func diamondStep(map: Array[Array], x: int, y: int, reach: int, size: int, roughness: float, max_height: int, rand: RandomNumberGenerator):
 	var count = 0
 	var avg = 0.0
 	if x - reach >= 0:
@@ -40,7 +36,7 @@ static func diamondStep(map: Array[Array], x: int, y: int, reach: int, size: int
 
 # generate a height map as a two dimensional array out of integers.
 # Size must be 2^n + 1 -> 3, 5, 9, 17, ... 257
-static func generate(size: int, roughness: float, max_height: int, rand: RandomNumberGenerator) -> Array[Array]:
+func generate(size: int, roughness: float, max_height: int, rand: RandomNumberGenerator) -> Array[Array]:
 	var map: Array[Array] = []
 	# Prefill the map with zeros
 	for x in range(0, size):
