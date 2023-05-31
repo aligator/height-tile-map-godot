@@ -16,9 +16,10 @@ var main_map: TileMap
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	if heights.size() == 0:
-		var rand = RandomNumberGenerator.new()
-		heights = DiamondSquare.generate(size+1, 0.5, max_height-1, rand)
+	assert(size % 2 == 0, "size must be a power of 2")
+
+	var rand = RandomNumberGenerator.new()
+	heights = DiamondSquare.generate(size+1, 1, max_height-1, rand)
 		
 	# print the map line by line
 	for y in range(heights.size()):

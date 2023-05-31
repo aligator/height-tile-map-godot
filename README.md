@@ -11,3 +11,6 @@ I am not sure yet, if / how this tile map could be used in real projects.
 For now think of it as a tech-experiment.
 
 A small, simple noise generator is included to generate example maps. It will regenerate on each run.
+(Note: currently it is a bit broken and generates invalid tiles which cannot be rendered...)
+
+![](example_map.png)

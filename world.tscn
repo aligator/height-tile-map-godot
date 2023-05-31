@@ -44,8 +44,7 @@ layer_0/y_sort_enabled = true
 layer_0/tile_data = PackedInt32Array(-458744, 786432, 0, -458742, 786432, 0, -458743, 786432, 0, -458745, 786432, 0)
 
 [node name="HeightTileMap2" parent="." instance=ExtResource("2_k0jk2")]
-max_height = 4
+size = 16
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(28, 162)
-zoom = Vector2(2, 2)

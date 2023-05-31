@@ -2,6 +2,13 @@ extends Node
 
 class_name DiamondSquare
 
+static func _get_or(map: Array[Array], x, y, default):
+	if x < 0 or x >= map.size():
+		return default
+	if y < 0 or y >= map[0].size():
+		return default
+	return map[x][y]
+
 # generate a height map as a two dimensional array out of integers.
 static func generate(size: int, roughness: float, max_height: float, rand: RandomNumberGenerator) -> Array[Array]:
 	var map: Array[Array] = []
@@ -18,8 +25,7 @@ static func generate(size: int, roughness: float, max_height: float, rand: Rando
 	map[0][size-1] = rand.randf_range(0, max_height)
 	map[size-1][size-1] = rand.randf_range(0, max_height)
 
-	# Error if not Pow of 2
-	
+	# Error if Pow of 2
 	assert(size % 2 != 0, "size must not be a power of 2")
 	
 	var side_length: int = size - 1
@@ -75,9 +81,56 @@ static func generate(size: int, roughness: float, max_height: float, rand: Rando
 				lowest = map[x][y]
 			if map[x][y] > highest:
 				highest = map[x][y]
+
 	for x in range(0, size):
 		for y in range(0, size):
-			map[x][y] = roundi((map[x][y] - lowest) / (highest - lowest) * max_height)
+			var new_height = roundi((map[x][y] - lowest) / (highest - lowest) * max_height)
+			map[x][y] = new_height
+
+	# Do some plausi checks and fix the map if necessary
+	for x in range(0, size):
+		for y in range(0, size):
+			var new_height = map[x][y]
+			# determine the min and max height for each point.
+			# * Adjacent points should not differ by more than 1
+			# * Corner points should not differ by more than 2
+
+			var straight: Array = [
+				_get_or(map, x, y-1, -1),
+				_get_or(map, x, y+1, -1),
+				_get_or(map, x-1, y, -1),
+				_get_or(map, x+1, y, -1)
+			].filter(func(number): return number != -1)
+			
+			var tile_min = min(straight.max()-1, 0)
+			var tile_max = min(straight.min()+1, max_height)
+
+			var diagonal: Array = [
+				_get_or(map, x-1, y-1, -1),
+				_get_or(map, x+1, y-1, -1),
+				_get_or(map, x-1, y+1, -1),
+				_get_or(map, x+1, y+1, -1)
+			].filter(func(number): return number != -1)
+
+			var diagonal_tile_min = max(diagonal.max()-2, 0)
+			var diagonal_tile_max = min(diagonal.min()+2, max_height)
+
+			tile_min = max(0, tile_min, diagonal_tile_min)
+			tile_max = min(max_height, tile_max, diagonal_tile_max)
+
+			if new_height < tile_min:
+				new_height = tile_min
+			if new_height > tile_max:
+				new_height = tile_max
+
+			map[x][y] = new_height
+
+	# Print the map line by line
+	for y in range(0, size):
+		var line = ""
+		for x in range(0, size):
+			line += str(map[x][y]) + " "
+		print(line)
 
 	# Return the map
 	return map
