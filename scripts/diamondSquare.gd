@@ -142,7 +142,7 @@ func generate(size: int, roughness: float, max_height: int, rand: RandomNumberGe
 				diamond_step(map, x, y, half_length, side_length, roughness, max_height, rand)
 		
 		var col = 0
-		for x in range(0, size+half_length, half_length):
+		for x in range(0, size+1, half_length):
 			col += 1
 			# If this is an odd column
 			if col % 2 == 1:
