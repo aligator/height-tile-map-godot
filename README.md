@@ -10,8 +10,6 @@ which leverages multiple normal tile maps, one for each layer.
 I am not sure yet, if / how this tile map could be used in real projects. 
 For now think of it as a tech-experiment.
 
-A small, simple noise generator is included to generate example maps. It will regenerate on each run.  
-It requires the map size to be 2^n
-(Note: currently it is a bit broken and generates invalid tiles which cannot be rendered...)
-
+A small, simple noise generator (Diamond Square) is included to generate example maps. It will regenerate on each run.  
+It requires the map size to be 2^n.
 ![](example_map.png)
