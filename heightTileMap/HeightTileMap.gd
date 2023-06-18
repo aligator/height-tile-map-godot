@@ -64,13 +64,12 @@ func _ready():
 func _process(_delta):
 	# Get the mouse position, and map it to the map and back.
 	var mouse_pos = get_local_mouse_position()
-	#var local_mouse_pos =  to_local(mouse_pos)
 	var tile_pos = self.local_to_map(mouse_pos)
 	var back_to_local = self.map_to_local(tile_pos)
 	print("mouse: ", mouse_pos)
 	print("tile:  ", tile_pos)
 	print("reverse:  ", back_to_local)
-	#main_map.erase_cell(0, tile_pos)
+	self.erase_cell(0, tile_pos)
 
 func height(at: Vector2i) -> int:
 	if at.x < 0 || at.x >= heights.size():
