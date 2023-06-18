@@ -1,6 +1,7 @@
 extends Node2D
 class_name HeightTileMap
 
+@export var seed: int = 0
 @export var size: int = 16
 @export var max_height: int = 16
 @export var roughness: float = 30
@@ -20,6 +21,9 @@ var main_map: TileMap
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var rand = RandomNumberGenerator.new()
+	if seed != 0:
+		rand.set_seed(seed)
+	
 	heights = map_generator.generate(size+1, roughness, max_height-1, rand)
 		
 	# print the map line by line

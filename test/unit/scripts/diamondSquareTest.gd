@@ -8,8 +8,6 @@ func before_each():
 	gut.p("Reset Seed")
 	rand.set_seed(42)
 
-# With this setup, you can use `params.p1`, `params.p2`, and
-# `params.result` in the test below.
 var diamond_params = ParameterFactory.named_parameters(
 	# map: Array[Array], x: int, y: int, reach: int, size: int, roughness: float, max_height: int
 	['name', 'map', 'x', 'y', 'reach', 'size', 'roughness', 'max_height', "result"], # names
@@ -127,6 +125,97 @@ func test_diamond_step(params = use_parameters(diamond_params)):
 			got[x].append(params.map[x][y])
 	
 	ds.diamond_step(got, params.x, params.y, params.reach, params.size-1, params.roughness, params.max_height, rand)
+	
+	for x in range(got.size()):
+		for y in range(got[x].size()):
+			assert_eq(got[x][y], params.result[x][y], "x: " + str(x) + ", y: " + str(y))
+
+var square_params = ParameterFactory.named_parameters(
+	# map: Array[Array], x: int, y: int, reach: int, size: int, roughness: float, max_height: int
+	['name', 'map', 'x', 'y', 'reach', 'size', 'roughness', 'max_height', "result"], # names
+	[# values
+	["normal calculation - side 1",
+		[[   1, -1, -1, -1,  2],
+		   [-1, -1, -1, -1, -1],
+		   [-1, -1,  3, -1, -1],
+		   [-1, -1, -1, -1, -1],
+		   [ 1, -1, -1, -1,  3]] as Array[Array], # map
+		0, 2, # x, y
+		2,    # reach
+		5,    # size
+		0,    # roughness
+		20,    # max_height
+		[[   1, -1,  2,  -1,  2],
+		   [-1, -1, -1, -1, -1],
+		   [-1, -1,  3, -1, -1],
+		   [-1, -1, -1, -1, -1],
+		   [ 1, -1, -1, -1,  3]] as Array[Array], # result
+	],
+	["normal calculation - side 2",
+		[[   1, -1, -1, -1,  2],
+		   [-1, -1, -1, -1, -1],
+		   [-1, -1,  3, -1, -1],
+		   [-1, -1, -1, -1, -1],
+		   [ 1, -1, -1, -1,  3]] as Array[Array], # map
+		2, 4, # x, y
+		2,    # reach
+		5,    # size
+		0,    # roughness
+		20,    # max_height
+		[[   1, -1, -1,  -1,  2],
+		   [-1, -1, -1, -1, -1],
+		   [-1, -1,  3, -1,  3],
+		   [-1, -1, -1, -1, -1],
+		   [ 1, -1, -1, -1,  3]] as Array[Array], # result
+	],
+	["normal calculation - side 3",
+		[[   1, -1, -1, -1,  2],
+		   [-1, -1, -1, -1, -1],
+		   [-1, -1,  3, -1, -1],
+		   [-1, -1, -1, -1, -1],
+		   [ 1, -1, -1, -1,  3]] as Array[Array], # map
+		4, 2, # x, y
+		2,    # reach
+		5,    # size
+		0,    # roughness
+		20,    # max_height
+		[[   1, -1, -1,  -1,  2],
+		   [-1, -1, -1, -1, -1],
+		   [-1, -1,  3, -1, -1],
+		   [-1, -1, -1, -1, -1],
+		   [ 1, -1,  2, -1,  3]] as Array[Array], # result
+	],
+	["normal calculation - side 4",
+		[[   1, -1, -1, -1,  2],
+		   [-1, -1, -1, -1, -1],
+		   [-1, -1,  3, -1, -1],
+		   [-1, -1, -1, -1, -1],
+		   [ 1, -1, -1, -1,  3]] as Array[Array], # map
+		2, 0, # x, y
+		2,    # reach
+		5,    # size
+		0,    # roughness
+		20,    # max_height
+		[[   1, -1, -1,  -1,  2],
+		   [-1, -1, -1, -1, -1],
+		   [ 2, -1,  3, -1, -1],
+		   [-1, -1, -1, -1, -1],
+		   [ 1, -1, -1, -1,  3]] as Array[Array], # result
+	],
+	])
+func test_square_step(params = use_parameters(square_params)):
+	gut.p(params.name)
+	
+	var ds = DiamondSquare.new()
+	
+	# deep copy the map as it will be modified
+	var got: Array[Array] = []
+	for x in range(params.map.size()):
+		got.append([])
+		for y in range(params.map[x].size()):
+			got[x].append(params.map[x][y])
+	
+	ds.square_step(got, params.x, params.y, params.reach, params.size, params.roughness, params.max_height, rand)
 	
 	for x in range(got.size()):
 		for y in range(got[x].size()):

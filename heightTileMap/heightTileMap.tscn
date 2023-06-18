@@ -12,7 +12,6 @@ mapper_script = ExtResource("2_iow4v")
 map_generator_script = ExtResource("3_kysf3")
 
 [node name="OpenTTDBaseMap" type="TileMap" parent="."]
-visible = false
 y_sort_enabled = true
 tile_set = ExtResource("3_3xdus")
 format = 2

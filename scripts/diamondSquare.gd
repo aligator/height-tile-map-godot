@@ -10,11 +10,15 @@
 func print_map(map):
 	# Print the map line by line
 	for x in range(0, map.size()):
-		var line = ""
+		var line = "  | "
+		if x == map.size()/2:
+			line = "Y | "
+			
 		for y in range(0, map[x].size()):
-			line += str(map[x][y]) + " "
+			line += str("%0*d " % [2, map[y][x]])
 		print(line)
-	print("_______________")
+	print("  ____________________________")
+	print("               X\n")
 
 # Sets the center based on the height of four edge points
 #
@@ -91,11 +95,12 @@ func square_step(map: Array[Array], x: int, y: int, reach: int, size: int, rough
 	var avg = 0.0
 	var local_max_height = max_height
 	var local_min_height = 0
+	
 	if x - reach >= 0:
-		avg += map[x-reach][y-reach]
+		avg += map[x-reach][y]
 		count+=1
 		local_min_height = max(local_min_height, map[x-reach][y-reach] - reach)
-		local_max_height = min(local_max_height, map[x-reach][y-reach] + reach)
+		local_max_height = min(local_max_height, map[x-reach][y] + reach)
 	if x + reach < size:
 		avg += map[x+reach][y]
 		count+=1
@@ -112,8 +117,11 @@ func square_step(map: Array[Array], x: int, y: int, reach: int, size: int, rough
 		local_min_height = max(local_min_height, map[x][y+reach] - reach)
 		local_max_height = min(local_max_height, map[x][y+reach] + reach)
 		
-	avg += rand.randf_range(-roughness, roughness)
+#	local_min_height = max(local_min_height, map[x][y]-reach)
+#	local_max_height = min(local_max_height, map[x][y]+reach)
+		
 	avg /= count
+	avg += rand.randf_range(-roughness, roughness)
 	
 	map[x][y] = clampi(roundi(avg), max(0, min(local_min_height, local_max_height)), max(0, local_max_height))
 
@@ -140,6 +148,8 @@ func generate(size: int, roughness: float, max_height: int, rand: RandomNumberGe
 		for x in range(0, size - 1, side_length):
 			for y in range(0, size - 1, side_length):
 				diamond_step(map, x, y, half_length, side_length, roughness, max_height, rand)
+		print("diamond")
+		print_map(map)
 		
 		var col = 0
 		for x in range(0, size+1, half_length):
@@ -151,9 +161,13 @@ func generate(size: int, roughness: float, max_height: int, rand: RandomNumberGe
 			else:
 				for y in range(0, size, side_length):
 					square_step(map, x % size, y % size, half_length, size, roughness, max_height, rand)
+		
+		print("square")
+		print_map(map)
 		roughness /= 2.0
 		side_length /= 2
 
+	print_map(map)
 	# Return the map
 	return map
 
