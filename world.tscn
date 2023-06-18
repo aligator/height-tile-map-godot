@@ -44,8 +44,8 @@ layer_0/y_sort_enabled = true
 layer_0/tile_data = PackedInt32Array(-458744, 786432, 0, -458742, 786432, 0, -458743, 786432, 0, -458745, 786432, 0)
 
 [node name="HeightTileMap2" parent="." instance=ExtResource("2_k0jk2")]
-size = 8
-max_height = 8
+seed = 3571322487510440960
+size = 256
 roughness = 10.0
 
 [node name="Camera2D" type="Camera2D" parent="."]

@@ -132,7 +132,7 @@ func test_diamond_step(params = use_parameters(diamond_params)):
 
 var square_params = ParameterFactory.named_parameters(
 	# map: Array[Array], x: int, y: int, reach: int, size: int, roughness: float, max_height: int
-	['name', 'map', 'x', 'y', 'reach', 'size', 'roughness', 'max_height', "result"], # names
+	['name', 'map', 'x', 'y', 'reach', 'size', 'roughness', 'max_height', "result", "seed"], # names
 	[# values
 	["normal calculation - side 1",
 		[[   1, -1, -1, -1,  2],
@@ -150,6 +150,7 @@ var square_params = ParameterFactory.named_parameters(
 		   [-1, -1,  3, -1, -1],
 		   [-1, -1, -1, -1, -1],
 		   [ 1, -1, -1, -1,  3]] as Array[Array], # result
+		42,
 	],
 	["normal calculation - side 2",
 		[[   1, -1, -1, -1,  2],
@@ -167,6 +168,7 @@ var square_params = ParameterFactory.named_parameters(
 		   [-1, -1,  3, -1,  3],
 		   [-1, -1, -1, -1, -1],
 		   [ 1, -1, -1, -1,  3]] as Array[Array], # result
+		42,
 	],
 	["normal calculation - side 3",
 		[[   1, -1, -1, -1,  2],
@@ -184,6 +186,7 @@ var square_params = ParameterFactory.named_parameters(
 		   [-1, -1,  3, -1, -1],
 		   [-1, -1, -1, -1, -1],
 		   [ 1, -1,  2, -1,  3]] as Array[Array], # result
+		42,
 	],
 	["normal calculation - side 4",
 		[[   1, -1, -1, -1,  2],
@@ -201,8 +204,35 @@ var square_params = ParameterFactory.named_parameters(
 		   [ 2, -1,  3, -1, -1],
 		   [-1, -1, -1, -1, -1],
 		   [ 1, -1, -1, -1,  3]] as Array[Array], # result
+		42,
 	],
-	])
+	["very rough with specific seed (previously broken)",
+						#            V--broken
+		[[   2, -1,  3, -1,  5, -1, -1, -1,  1],
+		   [-1,  3, -1,  4, -1, 02, -1,  1, -1],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00]] as Array[Array], # map
+		0, 6, # x, y
+		2,    # reach
+		8,    # size
+		50,    # roughness
+		8,    # max_height
+		[[   2, -1,  3, -1,  5, -1,  3, -1,  1],
+		   [-1,  3, -1,  4, -1, 02, -1,  1, -1],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00],
+		   [04, -1, 04, -1, 05, -1, 03, -1, 00]] as Array[Array], # result
+		124246,
+	]])
 func test_square_step(params = use_parameters(square_params)):
 	gut.p(params.name)
 	

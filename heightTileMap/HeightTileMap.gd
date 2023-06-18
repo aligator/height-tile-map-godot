@@ -24,6 +24,9 @@ func _ready():
 	if seed != 0:
 		rand.set_seed(seed)
 	
+	print("Seed:")
+	print(rand.seed)
+	
 	heights = map_generator.generate(size+1, roughness, max_height-1, rand)
 		
 	# print the map line by line

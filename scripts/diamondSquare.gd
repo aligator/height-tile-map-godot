@@ -99,7 +99,7 @@ func square_step(map: Array[Array], x: int, y: int, reach: int, size: int, rough
 	if x - reach >= 0:
 		avg += map[x-reach][y]
 		count+=1
-		local_min_height = max(local_min_height, map[x-reach][y-reach] - reach)
+		local_min_height = max(local_min_height, map[x-reach][y] - reach)
 		local_max_height = min(local_max_height, map[x-reach][y] + reach)
 	if x + reach < size:
 		avg += map[x+reach][y]
@@ -137,10 +137,14 @@ func generate(size: int, roughness: float, max_height: int, rand: RandomNumberGe
 		map.append(row)
 	
 	# Set the corners to random values
-	map[0][0] = rand.randi_range(0, max_height)
-	map[size-1][0] = rand.randi_range(0, max_height)
-	map[0][size-1] = rand.randi_range(0, max_height)
-	map[size-1][size-1] = rand.randi_range(0, max_height)
+#	map[0][0] = rand.randi_range(0, max_height)
+#	map[size-1][0] = rand.randi_range(0, max_height)
+#	map[0][size-1] = rand.randi_range(0, max_height)
+#	map[size-1][size-1] = rand.randi_range(0, max_height)
+	map[0][0] = 2
+	map[size-1][0] = 1
+	map[0][size-1] = 6
+	map[size-1][size-1] = 4
 	
 	var side_length: int = size - 1
 	while side_length >= 2:
@@ -148,8 +152,10 @@ func generate(size: int, roughness: float, max_height: int, rand: RandomNumberGe
 		for x in range(0, size - 1, side_length):
 			for y in range(0, size - 1, side_length):
 				diamond_step(map, x, y, half_length, side_length, roughness, max_height, rand)
-		print("diamond")
-		print_map(map)
+				
+		if size <= 16:
+			print("diamond")
+			print_map(map)
 		
 		var col = 0
 		for x in range(0, size+1, half_length):
@@ -162,12 +168,16 @@ func generate(size: int, roughness: float, max_height: int, rand: RandomNumberGe
 				for y in range(0, size, side_length):
 					square_step(map, x % size, y % size, half_length, size, roughness, max_height, rand)
 		
-		print("square")
-		print_map(map)
+		if size <= 16:
+			print("square")
+			print_map(map)
+		
 		roughness /= 2.0
 		side_length /= 2
 
-	print_map(map)
+	if size <= 16:
+		print_map(map)
+	
 	# Return the map
 	return map
 
