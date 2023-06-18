@@ -5,7 +5,7 @@
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_l72p5"]
 resource_name = "Grass"
 texture = ExtResource("1_k66l6")
-texture_region_size = Vector2i(64, 47)
+texture_region_size = Vector2i(64, 63)
 0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0

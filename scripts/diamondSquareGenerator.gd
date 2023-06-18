@@ -117,9 +117,6 @@ func square_step(map: Array[Array], x: int, y: int, reach: int, size: int, rough
 		local_min_height = max(local_min_height, map[x][y+reach] - reach)
 		local_max_height = min(local_max_height, map[x][y+reach] + reach)
 		
-#	local_min_height = max(local_min_height, map[x][y]-reach)
-#	local_max_height = min(local_max_height, map[x][y]+reach)
-		
 	avg /= count
 	avg += rand.randf_range(-roughness, roughness)
 	
@@ -137,14 +134,10 @@ func generate(size: int, roughness: float, max_height: int, rand: RandomNumberGe
 		map.append(row)
 	
 	# Set the corners to random values
-#	map[0][0] = rand.randi_range(0, max_height)
-#	map[size-1][0] = rand.randi_range(0, max_height)
-#	map[0][size-1] = rand.randi_range(0, max_height)
-#	map[size-1][size-1] = rand.randi_range(0, max_height)
-	map[0][0] = 2
-	map[size-1][0] = 1
-	map[0][size-1] = 6
-	map[size-1][size-1] = 4
+	map[0][0] = rand.randi_range(0, max_height)
+	map[size-1][0] = rand.randi_range(0, max_height)
+	map[0][size-1] = rand.randi_range(0, max_height)
+	map[size-1][size-1] = rand.randi_range(0, max_height)
 	
 	var side_length: int = size - 1
 	while side_length >= 2:
@@ -180,4 +173,3 @@ func generate(size: int, roughness: float, max_height: int, rand: RandomNumberGe
 	
 	# Return the map
 	return map
-

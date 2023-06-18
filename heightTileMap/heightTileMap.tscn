@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://heightTileMap/HeightTileMap.gd" id="1_12oik"]
 [ext_resource type="Script" path="res://scripts/openTTDMapper.gd" id="2_iow4v"]
 [ext_resource type="TileSet" uid="uid://b2qy7iiuvn7be" path="res://assets/grassTiles.tres" id="3_3xdus"]
-[ext_resource type="Script" path="res://scripts/diamondSquare.gd" id="3_kysf3"]
+[ext_resource type="Script" path="res://scripts/diamondSquareGenerator.gd" id="3_kysf3"]
 
 [node name="HeightTileMap" type="Node2D" node_paths=PackedStringArray("base_tile_map")]
 script = ExtResource("1_12oik")
