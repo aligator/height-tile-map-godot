@@ -1,6 +1,6 @@
 extends GutTest
 
-var DiamondSquare = load('res://scripts/diamondSquare.gd')
+var DiamondSquare = load('res://scripts/diamondSquareGenerator.gd')
 
 var rand = RandomNumberGenerator.new()
 
