@@ -1,0 +1,18 @@
+# Rust/Cargo specific
+/target/
+**/*.rs.bk
+*.pdb
+
+# Lock file (uncomment if this is a library)
+# Cargo.lock
+
+# IDE
+.idea/
+
+# Bevy-specific
+# Hot reload artifacts
+*.hot_reload
+
+# System files
+.DS_Store
+Thumbs.db 

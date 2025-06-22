@@ -1,0 +1,36 @@
+{
+    "folders": [
+        {
+            "name": "Height Tile Map",
+            "path": "./"
+        },
+        {
+            "name": "Godot Project",
+            "path": "./godot"
+        },
+        {
+            "name": "Bevy Project",
+            "path": "./bevy"
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/target": true,
+            "**/.godot": true,
+            "**/node_modules": true
+        },
+        "rust-analyzer.linkedProjects": [
+            "./bevy/Cargo.toml"
+        ],
+        "terminal.integrated.env.linux": {
+            "ARGV0": null,
+        },
+    },
+    "extensions": {
+        "recommendations": [
+            "rust-lang.rust-analyzer",
+            "geequlim.godot-tools",
+            "ms-vscode.cpptools"
+        ]
+    }
+}
