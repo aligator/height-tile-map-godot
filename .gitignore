@@ -1,2 +1,16 @@
 # Godot 4+ specific ignores
 .godot/
+
+# Rust specific ignores
+/target/
+**/*.rs.bk
+*.pdb
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
