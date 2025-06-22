@@ -36,6 +36,13 @@ impl DiamondSquareGenerator {
         max_height: i32,
         rng: &mut StdRng,
     ) -> Vec<Vec<i32>> {
+        // Size must be of the form 2^n + 1 (3, 5, 9, 17, 33, 65, 129, 257, ...)
+        assert!(
+            size >= 3 && (size - 1).is_power_of_two(),
+            "Size must be of form 2^n + 1 (3, 5, 9, 17, 33, 65, 129, 257, ...), got {}",
+            size
+        );
+
         // Prefill the map with -1 (unset values)
         let mut map = vec![vec![-1; size]; size];
 

@@ -20,15 +20,14 @@ fn setup(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    // Camera positioned like in Godot world.tscn: position Vector2(175, 728), zoom 0.4
     commands.spawn((
         Camera2d,
-        Transform::from_xyz(175.0, -728.0, 0.0), // Y inverted for Bevy coordinate system
+        Transform::from_xyz(0.0, 0.0, 0.0), // Y inverted for Bevy coordinate system
     ));
 
     println!("Generating OpenTTD-style height map...");
 
-    // Create height tile map with parameters from world.tscn HeightTileMap2
+    // Create height tile map
     let mut rng = StdRng::seed_from_u64(42);
     let size = 128 + 1; // size = 128 in world.tscn, +1 for corner heights
     let roughness = 10.0; // roughness = 10.0 in world.tscn
