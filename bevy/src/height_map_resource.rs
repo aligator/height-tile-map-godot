@@ -3,11 +3,11 @@ use bevy::prelude::*;
 use crate::{
     diamond_square::{DiamondSquareGenerator, HeightMap},
     open_ttd_mapper::{OpenTTDMapper, TileHeights},
-    open_ttd_renderer::OpenTTDRenderer,
+    open_ttd_renderer::{OpenTTDRenderer, OpenTTDRendererConfig},
 };
 
-/// Configuration for height map generation
-#[derive(Debug, Clone, Copy, Component, Resource)]
+/// Configuration for height map generation - now a Component instead of Resource
+#[derive(Debug, Clone, Copy, Component)]
 pub struct HeightMapConfig {
     pub size: usize,
     pub roughness: f32,
@@ -24,6 +24,39 @@ impl Default for HeightMapConfig {
             seed: 42,
         }
     }
+}
+
+/// Component containing the generated height map data
+#[derive(Component, Clone)]
+pub struct HeightMapData {
+    pub heights: HeightMap,
+    pub tile_heights: TileHeights,
+}
+
+/// Marker component to identify height map entities
+#[derive(Component)]
+pub struct HeightMapEntity;
+
+/// Component to mark that a height map needs regeneration
+#[derive(Component)]
+pub struct RegenerateHeightMap;
+
+/// Component to specify which generator to use for this map
+#[derive(Component)]
+pub struct GeneratorComponent<G>(pub G);
+
+/// Component to specify which mapper to use for this map
+#[derive(Component)]
+pub struct MapperComponent<M>(pub M);
+
+/// Component to specify which renderer to use for this map
+#[derive(Component)]
+pub struct RendererComponent<R>(pub R);
+
+/// Marker component for terrain tiles that need to be updated when height map changes
+#[derive(Component)]
+pub struct TerrainTile {
+    pub map_entity: Entity, // Reference to the parent map entity
 }
 
 /// Trait for generating height maps from terrain data
@@ -61,6 +94,8 @@ pub trait TerrainRenderer: Send + Sync + 'static {
         tile_heights: &TileHeights,
         config: &HeightMapConfig,
         mapper: &Self::Mapper,
+        map_entity: Entity,        // Add map entity for parenting
+        map_transform: &Transform, // Add map transform for positioning
     );
 
     /// Get the sprite index for a tile at given coordinates
@@ -73,209 +108,199 @@ pub trait TerrainRenderer: Send + Sync + 'static {
     ) -> usize;
 }
 
-/// Bevy Resource containing generated terrain data with generic types
-#[derive(Resource)]
-pub struct HeightMapResource<G, M>
+/// Bundle for creating a height map entity
+#[derive(Bundle)]
+pub struct HeightMapBundle<G, M, R>
 where
     G: HeightGenerator,
     M: TileMapper,
+    R: TerrainRenderer<Mapper = M>,
 {
     pub config: HeightMapConfig,
-    pub heights: HeightMap,
-    pub tile_heights: TileHeights,
-    generator: G,
-    mapper: M,
+    pub marker: HeightMapEntity,
+    pub generator: GeneratorComponent<G>,
+    pub mapper: MapperComponent<M>,
+    pub renderer: RendererComponent<R>,
+    pub transform: Transform,
 }
 
-impl<G, M> HeightMapResource<G, M>
+impl<G, M, R> HeightMapBundle<G, M, R>
 where
     G: HeightGenerator,
     M: TileMapper,
+    R: TerrainRenderer<Mapper = M>,
 {
-    /// Create a new HeightMapResource with specified generators
-    pub fn new(generator: G, mapper: M, config: HeightMapConfig) -> Self {
-        let heights = generator.generate(&config);
-        let tile_heights = mapper.build(&heights);
-
+    pub fn new(config: HeightMapConfig, generator: G, mapper: M, renderer: R) -> Self {
         Self {
             config,
-            heights,
-            tile_heights,
-            generator,
-            mapper,
+            marker: HeightMapEntity,
+            generator: GeneratorComponent(generator),
+            mapper: MapperComponent(mapper),
+            renderer: RendererComponent(renderer),
+            transform: Transform::default(),
         }
     }
 
-    /// Internal method to regenerate terrain with new configuration
-    fn regenerate_internal(&mut self, config: HeightMapConfig) {
-        self.config = config;
-        self.heights = self.generator.generate(&config);
-        self.tile_heights = self.mapper.build(&self.heights);
-    }
-
-    /// Regenerate terrain with new configuration
-    #[allow(dead_code)]
-    pub fn regenerate(&mut self, config: HeightMapConfig) {
-        self.regenerate_internal(config);
-    }
-
-    /// Regenerate with new seed only
-    #[allow(dead_code)]
-    pub fn regenerate_with_seed(&mut self, seed: u64) {
-        let mut config = self.config;
-        config.seed = seed;
-        self.regenerate_internal(config);
-    }
-
-    /// Get reference to the mapper
-    pub fn mapper(&self) -> &M {
-        &self.mapper
+    pub fn with_transform(mut self, transform: Transform) -> Self {
+        self.transform = transform;
+        self
     }
 }
 
+/// Type alias for the default height map bundle
+pub type DefaultHeightMapBundle =
+    HeightMapBundle<DiamondSquareGenerator, OpenTTDMapper, OpenTTDRenderer>;
+
 /// Plugin to add height map generation functionality
 ///
-/// This plugin uses the config-as-resource pattern. If no HeightMapConfig resource
-/// exists, it will insert a default one automatically.
+/// This plugin uses entity-based height maps. You can spawn multiple maps by
+/// creating entities with HeightMapBundle.
 ///
 /// # Usage:
 ///
 /// ```rust
-/// // Simple usage with default config
-/// app.add_plugins(DefaultHeightMapPlugin::default());
+/// // Add the plugin
+/// app.add_plugins(HeightMapPlugin::default());
 ///
-/// // Custom config - insert resource first, then add plugin
-/// app.insert_resource(HeightMapConfig {
-///     size: 257,
-///     roughness: 20.0,
-///     max_height: 32,
-///     seed: 12345,
-/// })
-/// .add_plugins(HeightMapPlugin::<DiamondSquareGenerator, OpenTTDMapper, OpenTTDRenderer>::default());
-///
-/// // Runtime regeneration - just change the resource!
-/// fn regenerate_map(mut config: ResMut<HeightMapConfig>) {
-///     config.seed = rand::thread_rng().gen();
+/// // Spawn maps in systems
+/// fn spawn_maps(
+///     mut commands: Commands,
+///     asset_server: Res<AssetServer>,
+///     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+/// ) {
+///     // Create renderer configs
+///     let grass_config = OpenTTDRendererConfig::default_grass(&asset_server, &mut texture_atlas_layouts);
+///     let stone_config = OpenTTDRendererConfig::from_assets(
+///         &asset_server,
+///         &mut texture_atlas_layouts,
+///         "stone_sheet.png",
+///         UVec2::new(64, 63),
+///         (19, 1),
+///     );
+///     
+///     // Main map
+///     commands.spawn(DefaultHeightMapBundle::new(
+///         HeightMapConfig {
+///             size: 257,
+///             roughness: 20.0,
+///             max_height: 32,
+///             seed: 12345,
+///         },
+///         DiamondSquareGenerator::default(),
+///         OpenTTDMapper::default(),
+///         OpenTTDRenderer::new(grass_config),
+///     ));
+///     
+///     // Mini-map with different texture
+///     commands.spawn(DefaultHeightMapBundle::new(
+///         HeightMapConfig {
+///             size: 65,
+///             roughness: 5.0,
+///             max_height: 8,
+///             seed: 54321,
+///         },
+///         DiamondSquareGenerator::default(),
+///         OpenTTDMapper::default(),
+///         OpenTTDRenderer::new(stone_config),
+///     ).with_transform(Transform::from_xyz(1000.0, 0.0, 0.0)));
 /// }
 /// ```
-pub struct HeightMapPlugin<G, M, R>
-where
-    G: HeightGenerator + Default,
-    M: TileMapper + Default,
-    R: TerrainRenderer<Mapper = M> + Default,
-{
-    _phantom_g: std::marker::PhantomData<G>,
-    _phantom_m: std::marker::PhantomData<M>,
-    _phantom_r: std::marker::PhantomData<R>,
-}
+pub struct HeightMapPlugin;
 
-impl<G, M, R> Default for HeightMapPlugin<G, M, R>
-where
-    G: HeightGenerator + Default,
-    M: TileMapper + Default,
-    R: TerrainRenderer<Mapper = M> + Default,
-{
+impl Default for HeightMapPlugin {
     fn default() -> Self {
-        Self {
-            _phantom_g: std::marker::PhantomData,
-            _phantom_m: std::marker::PhantomData,
-            _phantom_r: std::marker::PhantomData,
-        }
+        Self
     }
 }
 
-impl<G, M, R> Plugin for HeightMapPlugin<G, M, R>
-where
-    G: HeightGenerator + Default,
-    M: TileMapper + Default,
-    R: TerrainRenderer<Mapper = M> + Default,
-{
+impl Plugin for HeightMapPlugin {
     fn build(&self, app: &mut App) {
-        // Insert default config if none exists
-        app.init_resource::<HeightMapConfig>()
-            .add_systems(PreStartup, init_height_map_system::<G, M>)
-            .add_systems(Update, auto_regenerate_height_map_system::<G, M>)
-            .add_systems(Update, update_terrain_visuals_system::<G, M, R>);
+        // Single unified system that handles everything
+        app.add_systems(
+            Update,
+            render_height_map_system::<DiamondSquareGenerator, OpenTTDMapper, OpenTTDRenderer>,
+        );
     }
 }
 
-/// Type alias for the default plugin (without where clause - not supported yet)
-pub type DefaultHeightMapPlugin =
-    HeightMapPlugin<DiamondSquareGenerator, OpenTTDMapper, OpenTTDRenderer>;
+/// Type alias for the default plugin
+pub type DefaultHeightMapPlugin = HeightMapPlugin;
 
-/// System to initialize the height map resource with generic types
-fn init_height_map_system<G, M>(mut commands: Commands, config: Res<HeightMapConfig>)
-where
-    G: HeightGenerator + Default,
-    M: TileMapper + Default,
-{
-    let height_map_resource = HeightMapResource::new(G::default(), M::default(), *config);
-
-    println!("Initialized HeightMapResource with config: {:?}", *config);
-    println!("{}", height_map_resource.heights);
-    println!("{}", height_map_resource.tile_heights);
-
-    commands.insert_resource(height_map_resource);
-}
-
-/// System that automatically regenerates the height map when config changes
-fn auto_regenerate_height_map_system<G, M>(
-    config: Res<HeightMapConfig>,
-    mut height_map_res: ResMut<HeightMapResource<G, M>>,
-) where
-    G: HeightGenerator + Default,
-    M: TileMapper + Default,
-{
-    // Bevy's change detection - only runs when config actually changes!
-    if config.is_changed() {
-        println!("Config changed! Auto-regenerating height map...");
-        println!("New config: {:?}", *config);
-
-        height_map_res.regenerate_internal(*config);
-
-        println!("Height map regenerated successfully!");
-        println!("{}", height_map_res.heights);
-    }
-}
-
-/// Marker component for terrain tiles that need to be updated when height map changes
-#[derive(Component)]
-pub struct TerrainTile;
-
-/// System that updates the visual terrain when the height map resource changes
-fn update_terrain_visuals_system<G, M, R>(
-    height_map_res: Res<HeightMapResource<G, M>>,
+/// Unified system that handles both initial generation and regeneration
+fn render_height_map_system<G, M, R>(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-    // Query all existing terrain tiles to despawn them
-    terrain_query: Query<Entity, With<TerrainTile>>,
+    // All entities that need terrain generation (initial or regeneration)
+    height_map_query: Query<
+        (
+            Entity,
+            &HeightMapConfig,
+            &GeneratorComponent<G>,
+            &MapperComponent<M>,
+            &RendererComponent<R>,
+            &Transform,
+        ),
+        (
+            With<HeightMapEntity>,
+            Or<(Without<HeightMapData>, Changed<HeightMapConfig>)>,
+        ),
+    >,
+    // Existing terrain tiles for cleanup
+    terrain_query: Query<(Entity, &TerrainTile)>,
 ) where
-    G: HeightGenerator + Default,
-    M: TileMapper + Default,
-    R: TerrainRenderer<Mapper = M> + Default,
+    G: HeightGenerator,
+    M: TileMapper,
+    R: TerrainRenderer<Mapper = M>,
 {
-    // Only run when the height map actually changed
-    if height_map_res.is_changed() {
-        println!("🎨 Updating terrain visuals...");
+    let entity_count = height_map_query.iter().count();
+    if entity_count > 0 {
+        println!("🔄 Processing {} height map entities", entity_count);
 
-        // Despawn all existing terrain tiles
-        for entity in terrain_query.iter() {
-            commands.entity(entity).despawn();
+        for (entity, config, generator, mapper, renderer, transform) in height_map_query.iter() {
+            println!("⚙️  Processing terrain for entity {:?}", entity);
+
+            // Always clean up existing terrain tiles (prevents memory leaks)
+            let mut despawned_count = 0;
+            for (terrain_entity, terrain_tile) in terrain_query.iter() {
+                if terrain_tile.map_entity == entity {
+                    commands.entity(terrain_entity).despawn();
+                    despawned_count += 1;
+                }
+            }
+
+            if despawned_count > 0 {
+                println!(
+                    "🗑️  Cleaned up {} old terrain tiles for entity {:?}",
+                    despawned_count, entity
+                );
+            }
+
+            // Generate new terrain data
+            let heights = generator.0.generate(config);
+            let tile_heights = mapper.0.build(&heights);
+            let height_map_data = HeightMapData {
+                heights,
+                tile_heights,
+            };
+
+            // Insert/update data component
+            commands.entity(entity).insert(height_map_data.clone());
+
+            // Spawn new terrain
+            renderer.0.spawn_terrain(
+                &mut commands,
+                &asset_server,
+                &mut texture_atlas_layouts,
+                &height_map_data.heights,
+                &height_map_data.tile_heights,
+                config,
+                &mapper.0,
+                entity,
+                transform,
+            );
+
+            println!("✅ Terrain processed for entity {:?}", entity);
         }
-
-        // Create renderer and spawn terrain
-        let renderer = R::default();
-        renderer.spawn_terrain(
-            &mut commands,
-            &asset_server,
-            &mut texture_atlas_layouts,
-            &height_map_res.heights,
-            &height_map_res.tile_heights,
-            &height_map_res.config,
-            height_map_res.mapper(),
-        );
-
-        println!("✨ Terrain visuals updated!");
     }
 }

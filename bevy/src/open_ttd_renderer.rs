@@ -7,9 +7,98 @@ use crate::{
     open_ttd_mapper::{OpenTTDMapper, TileHeights},
 };
 
+/// Configuration for OpenTTD-style terrain rendering
+/// Contains all the assets and parameters needed for rendering
+#[derive(Clone, Debug)]
+pub struct OpenTTDRendererConfig {
+    /// The texture handle for the terrain sprite sheet
+    pub texture: Handle<Image>,
+    /// The texture atlas layout handle
+    pub texture_atlas_layout: Handle<TextureAtlasLayout>,
+    /// Logical tile size for positioning
+    pub tile_size: Vec2,
+    /// Actual texture size for rendering
+    pub texture_size: Vec2,
+    /// Height shift per layer (for 3D effect)
+    pub height_shift: Vec2,
+}
+
+impl OpenTTDRendererConfig {
+    /// Create a new config with pre-loaded assets
+    pub fn new(texture: Handle<Image>, texture_atlas_layout: Handle<TextureAtlasLayout>) -> Self {
+        Self {
+            texture,
+            texture_atlas_layout,
+            tile_size: Vec2::new(64.0, 32.0),
+            texture_size: Vec2::new(64.0, 63.0),
+            height_shift: Vec2::new(0.0, -8.0),
+        }
+    }
+
+    /// Create a config from asset server and texture atlas layouts
+    pub fn from_assets(
+        asset_server: &AssetServer,
+        texture_atlas_layouts: &mut Assets<TextureAtlasLayout>,
+        texture_path: &str,
+        texture_tile_size: UVec2,
+        atlas_size: (u32, u32),
+    ) -> Self {
+        let texture = asset_server.load(texture_path);
+
+        let layout = TextureAtlasLayout::from_grid(
+            texture_tile_size,
+            atlas_size.0,
+            atlas_size.1,
+            None,
+            None,
+        );
+        let texture_atlas_layout = texture_atlas_layouts.add(layout);
+
+        Self::new(texture, texture_atlas_layout)
+    }
+
+    /// Create default grass config
+    pub fn default_grass(
+        asset_server: &AssetServer,
+        texture_atlas_layouts: &mut Assets<TextureAtlasLayout>,
+    ) -> Self {
+        Self::from_assets(
+            asset_server,
+            texture_atlas_layouts,
+            "grass_sheet.png",
+            UVec2::new(64, 63),
+            (19, 1),
+        )
+    }
+
+    /// Builder pattern methods for customization
+    pub fn with_tile_size(mut self, tile_size: Vec2) -> Self {
+        self.tile_size = tile_size;
+        self
+    }
+
+    pub fn with_texture_size(mut self, texture_size: Vec2) -> Self {
+        self.texture_size = texture_size;
+        self
+    }
+
+    pub fn with_height_shift(mut self, height_shift: Vec2) -> Self {
+        self.height_shift = height_shift;
+        self
+    }
+}
+
 /// OpenTTD-style terrain renderer that works with OpenTTDMapper
-#[derive(Default)]
-pub struct OpenTTDRenderer;
+pub struct OpenTTDRenderer {
+    pub config: OpenTTDRendererConfig,
+}
+
+impl OpenTTDRenderer {
+    /// Create a new OpenTTDRenderer with custom configuration
+    pub fn new(config: OpenTTDRendererConfig) -> Self {
+        Self { config }
+    }
+}
 
 impl TerrainRenderer for OpenTTDRenderer {
     type Mapper = OpenTTDMapper;
@@ -23,28 +112,14 @@ impl TerrainRenderer for OpenTTDRenderer {
         tile_heights: &TileHeights,
         config: &HeightMapConfig,
         mapper: &Self::Mapper,
+        map_entity: Entity,
+        map_transform: &Transform,
     ) {
         let max_height = config.max_height;
 
-        // Load grass texture and create texture atlas layout
-        let grass_texture: Handle<Image> = asset_server.load("grass_sheet.png");
-
-        // Create texture atlas layout (19 tiles, each 64x63 pixels)
-        let layout = TextureAtlasLayout::from_grid(
-            UVec2::new(64, 63),
-            19, // 19 tiles in a row
-            1,  // 1 row
-            None,
-            None,
-        );
-        let texture_atlas_layout = texture_atlas_layouts.add(layout);
-
-        // Tile configuration matching Godot's TileMap system
-        let tile_size = Vec2::new(64.0, 32.0); // From grassTiles.tres tile_size
-        let texture_size = Vec2::new(64.0, 63.0); // Actual texture size
-
-        // OpenTTD-style height shift - each layer is shifted by this amount
-        let height_shift = Vec2::new(0.0, -8.0);
+        // Use the texture and layout from our config
+        let grass_texture = self.config.texture.clone();
+        let texture_atlas_layout = self.config.texture_atlas_layout.clone();
 
         // Group tiles by their height (like Godot's tile_maps array)
         let mut tiles_by_height: HashMap<i32, Vec<(usize, usize, usize)>> = HashMap::new();
@@ -62,7 +137,7 @@ impl TerrainRenderer for OpenTTDRenderer {
         }
 
         // Debug: Print how many tiles are at each height
-        println!("\nTiles per height layer:");
+        println!("\nTiles per height layer for map {:?}:", map_entity);
         for height in 0..max_height {
             if let Some(tiles) = tiles_by_height.get(&height) {
                 println!("Height {}: {} tiles", height, tiles.len());
@@ -72,21 +147,32 @@ impl TerrainRenderer for OpenTTDRenderer {
         }
 
         // Now render each height layer with its own transform (like Godot's tile_maps)
+        let mut total_tiles_spawned = 0;
+
         for height in 0..max_height {
             if let Some(tiles) = tiles_by_height.get(&height) {
                 // Apply the height-based transform shift (like Godot's tile_map.set_transform)
-                let layer_shift = height_shift * height as f32;
+                let layer_shift = self.config.height_shift * height as f32;
 
-                println!("Rendering height {} with shift {:?}", height, layer_shift);
+                println!(
+                    "Rendering height {} with shift {:?} for map {:?} - {} tiles",
+                    height,
+                    layer_shift,
+                    map_entity,
+                    tiles.len()
+                );
 
                 for &(x, y, sprite_index) in tiles {
                     // Isometric transformation (like Godot's isometric TileSet)
                     // Convert grid coordinates to isometric coordinates
-                    let iso_x = (x as f32 - y as f32) * tile_size.x / 2.0;
-                    let iso_y = (x as f32 + y as f32) * tile_size.y / 2.0;
+                    let iso_x = (x as f32 - y as f32) * self.config.tile_size.x / 2.0;
+                    let iso_y = (x as f32 + y as f32) * self.config.tile_size.y / 2.0;
 
                     // Apply layer transform shift
                     let final_pos = Vec2::new(iso_x, iso_y) + layer_shift;
+
+                    // Apply map entity transform as offset
+                    let world_pos = final_pos + map_transform.translation.xy();
 
                     commands.spawn((
                         Sprite {
@@ -95,19 +181,26 @@ impl TerrainRenderer for OpenTTDRenderer {
                                 layout: texture_atlas_layout.clone(),
                                 index: sprite_index,
                             }),
-                            custom_size: Some(texture_size),
+                            custom_size: Some(self.config.texture_size),
                             ..default()
                         },
                         Transform::from_xyz(
-                            final_pos.x,
-                            -final_pos.y,  // Y inverted for Bevy coordinate system
-                            height as f32, // Z-index for proper layering
+                            world_pos.x,
+                            -world_pos.y, // Y inverted for Bevy coordinate system
+                            height as f32 + map_transform.translation.z, // Z-index with map offset
                         ),
-                        TerrainTile, // Marker component for easy identification
+                        TerrainTile { map_entity }, // Reference to parent map
                     ));
+
+                    total_tiles_spawned += 1;
                 }
             }
         }
+
+        println!(
+            "🎨 Total tiles spawned for map {:?}: {}",
+            map_entity, total_tiles_spawned
+        );
 
         // Analyze slope distribution (sample only)
         let mut slope_counts = HashMap::new();
@@ -155,12 +248,15 @@ impl TerrainRenderer for OpenTTDRenderer {
             }
         }
 
-        println!("\nSlope distribution (sample):");
+        println!("\nSlope distribution (sample) for map {:?}:", map_entity);
         for (bitmask, count) in slope_counts {
             println!("Slope {:05b}: {} tiles", bitmask, count);
         }
 
-        println!("\nOpenTTD-style height tile map generated successfully!");
+        println!(
+            "\nOpenTTD-style height tile map generated successfully for map {:?}!",
+            map_entity
+        );
         println!(
             "Size: {}x{}, Roughness: {}",
             config.size - 1,
